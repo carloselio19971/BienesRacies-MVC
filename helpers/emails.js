@@ -4,7 +4,7 @@
 
         console.log("USER:", process.env.EMAIL_USER);
         console.log("PASS:", process.env.EMAIL_PASSWORD);
-      
+
 
           const  transport = nodemailer.createTransport({
             host: process.env.EMAIL_HOST,
@@ -28,7 +28,7 @@
                   <p>Hola ${nombre}, comprueba tu cuenta en BienesRacies.com</p>
                   
                   <p>Tu cuenta ya esta lista solo debes confirmala  en el siguiente en enlaces:
-                  <a href="">Confirmar cuenta</a>
+                  <a href="${process.env.BACKEND_URL}:${process.env.PORT ?? 3000}/auth/confirmar/${token}">Confirmar cuenta</a>
                   </p>
 
                   <p>Si tu no creaste esta cuenta entonces puede ignorar el mensaje</p>

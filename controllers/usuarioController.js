@@ -2,6 +2,7 @@ import { check, validationResult } from "express-validator";
 import Usuario from "../models/Usuario.js";
 import { generarId } from "../helpers/tokens.js";
 import { emailRegistro } from "../helpers/emails.js";
+import csurf from "csurf";
 
 
 const formularioLogin = (req,res) =>{
@@ -11,8 +12,12 @@ const formularioLogin = (req,res) =>{
     })
 }
 const formularioRegistro = (req,res) =>{
+
+    console.log(req.csrfToken())
+
     res.render('auth/registro',{
-        pagina:'Crear Cuenta'
+        pagina:'Crear Cuenta',
+        csrfToken:req.csrfToken()
     })
 }
 
@@ -31,6 +36,7 @@ const registrar= async (req,res)=>{
         //Erores
         return   res.render('auth/registro',{
             pagina:'Crear cuenta',
+            csrfToken:req.csrfToken(),
             errores:resultado.array(),
             usuario:{
                 nombre:req.body.nombre,
@@ -54,6 +60,7 @@ const registrar= async (req,res)=>{
     if(existeUsuario){
         return   res.render('auth/registro',{
             pagina:'Crear cuenta',
+            csrfToken:req.csrfToken(),
             errores:[{msg:'El usuario ya esta Registrado'}],
             usuario:{
                 nombre:req.body.nombre,
@@ -90,6 +97,35 @@ const registrar= async (req,res)=>{
         
 }
 
+//Funcion que comprueba una cuenta 
+
+const confirmar = async (req,res) =>{
+    console.log(req.params);
+    const {token }= req.params;
+    //Verificar si el toke es valido y confirmar la cuenta
+
+    const usuario = await Usuario.findOne({where:{token}})
+    console.log(usuario);
+
+    //Confirmar el token
+    if(!usuario){
+        return res.render('auth/confirmar-cuenta',{
+             pagina:'Error el confirmar tu cuenta',
+             mensaje:'Hubo un error al confirmar tu cuenta , intenta de nuevo',
+             error:true
+        })
+    }
+    //Confirmar la cuenta
+     usuario.token=null;
+     usuario.confirmado=true;
+     await usuario.save();
+
+     res.render('auth/confirmar-cuenta',{
+        pagina:'Cuenta Confirmada',
+        mensaje:'La cuenta se confirmo Correctamente'
+     })
+ 
+}
 
 const formularioOlvidePassword = (req,res) =>{
 
@@ -101,6 +137,8 @@ const formularioOlvidePassword = (req,res) =>{
 export {
     formularioLogin,
     formularioRegistro,
-    formularioOlvidePassword,
-    registrar
+    registrar,
+    confirmar,
+    formularioOlvidePassword
+   
 }
